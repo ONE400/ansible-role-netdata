@@ -9,6 +9,19 @@
   notify: restart netdata
   become: true
 
+- name: config | Adding Netdata health.d config files
+  template:
+    src: '{{ item.src }}'
+    dest: /etc/netdata/health.d/{{ item.path | basename | regex_replace('.j2','') }}
+    # dest: '/etc/netdata/health.d/{{ item.path }}'
+    owner: "{{ netdata_user_info['user'] }}"
+    group: root
+    mode: u=rx,g=rx,o=r
+  with_filetree: 'templates/health.d'
+  when: item.state == 'file'
+  notify: restart netdata
+  become: true
+
 - name: config | Configuring Netdata Alarm Notifications
   template:
     dest: "{{ netdata_alarm_config_file }}"
